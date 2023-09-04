@@ -2,7 +2,12 @@ import pandas as pd
 import numpy as np
 from textblob import TextBlob
 from sklearn.metrics.pairwise import cosine_similarity
+from fastapi import FastAPI
 
+app = FastAPI()
+
+# Definición de los endpoints
+@app.get("/userdata/")
 def userdata(User_id: str):
     # Filtrar datos relevantes para el usuario en los DataFrames
     user_games = df_items[df_items['user_id'] == User_id]
@@ -27,7 +32,7 @@ def userdata(User_id: str):
 
     return money_spent, recommend_percentage, total_items
 
-
+@app.get("/countreviews/")
 def countreviews(fechaInicial:str, fechaFinal:str):
     df_filtrado = df_reviews[(df_reviews['fecha'] > fechaInicial) & (df_reviews['fecha'] < fechaFinal)]
     cantidad_total = df_filtrado.recommend.count()
@@ -37,7 +42,7 @@ def countreviews(fechaInicial:str, fechaFinal:str):
 
     return f"La cantidad es: {cantidad_total}, el porcentaje de recomendacion de los usuarios es {porcentaje} "
 
-
+@app.get("/genre/")
 def genre(genre_name:str):
 	# Agrupa por género y suma las horas jugadas
     genre_hours = df_combined.groupby('genres')['playtime_forever'].sum().reset_index()
@@ -48,7 +53,7 @@ def genre(genre_name:str):
     posicion = genre_hours[genre_hours['genres'] == genre_name].index[0] + 1
     return posicion
 
-
+@app.get("/userforgenre/")
 def userforgenre(genero:str):
     df_topgenero = df_combined[df_combined['genres'] == genero]
     df_topgenero = df_topgenero.sort_values(by='playtime_forever', ascending=False)
@@ -56,7 +61,7 @@ def userforgenre(genero:str):
     dicc = dict(zip(df_topgenero['user_id'], df_topgenero['user_url']))
     return dicc
 
-
+@app.get("/developer/")
 def developer(desarrollador:str):
     lista_anios_free = list(df_games[(df_games['developer'] == desarrollador) & (df_games['price'] == 0)].anio.unique())
     dicc = {}
@@ -67,7 +72,7 @@ def developer(desarrollador:str):
         dicc[i] = f'{round(porcentaje,2)}%'
     return dicc
 
-
+@app.get("/sentiment_analysis/")
 def sentiment_analysis(anio:int):
     df_sentiment = df_reviews[df_reviews['anio'] == anio]
     dicc = {}
@@ -80,29 +85,7 @@ def sentiment_analysis(anio:int):
     
 
 
-# Lectura de los csv ya transformados
-df_games = pd.read_csv('src/games.csv')
-df_reviews = pd.read_csv('src/reviews.csv')
-df_items = pd.read_csv('src/items.csv')
-
-# Expansion de los generos para las funciones
-df_genres = df_games.explode('genres')
-
-# Combina df_items y df_genres en función del id del juego
-df_combined = pd.merge(df_items, df_genres, left_on='item_id', right_on='id', how='inner')
-
-
-
-# Modelo de recomendacion
-
-#Lectura del csv con el one hot encoding realizado
-df_encoded = pd.read_csv('src/encoded.csv')
-
-#Guardo las columnas a considerar en el modelo
-columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
-
-
-
+@app.get("/recomendacion_juego/")
 def recomendacion_juego(id_juego):
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
@@ -135,4 +118,23 @@ def recomendacion_juego(id_juego):
         print(f"Juego: {juego_nombre} (ID: {juego_id}), Similitud: {score:.4f}")
 
 
-recomendacion_juego(80)
+# Lectura de los csv ya transformados
+df_games = pd.read_csv('src/games.csv')
+df_reviews = pd.read_csv('src/reviews.csv')
+df_items = pd.read_csv('src/items.csv')
+
+# Expansion de los generos para las funciones
+df_genres = df_games.explode('genres')
+
+# Combina df_items y df_genres en función del id del juego
+df_combined = pd.merge(df_items, df_genres, left_on='item_id', right_on='id', how='inner')
+
+
+
+# Modelo de recomendacion
+
+#Lectura del csv con el one hot encoding realizado
+df_encoded = pd.read_csv('src/encoded.csv')
+
+#Guardo las columnas a considerar en el modelo
+columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
