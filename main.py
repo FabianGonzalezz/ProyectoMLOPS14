@@ -1,0 +1,138 @@
+import pandas as pd
+import numpy as np
+from textblob import TextBlob
+from sklearn.metrics.pairwise import cosine_similarity
+
+def userdata(User_id: str):
+    # Filtrar datos relevantes para el usuario en los DataFrames
+    user_games = df_items[df_items['user_id'] == User_id]
+    user_reviews = df_reviews[df_reviews['user_id'] == User_id]
+
+    # Obtener los IDs de los juegos que el usuario ha tenido
+    user_game_ids = user_games['item_id']
+
+    # Filtrar los juegos correspondientes en df_games
+    user_games_info = df_games[df_games['id'].isin(user_game_ids)]
+
+    # Calcular la cantidad de dinero gastado
+    money_spent = user_games_info['price'].sum()
+
+    # Calcular el porcentaje de recomendación
+    total_reviews = len(user_reviews)
+    recommended_reviews = user_reviews['recommend'].sum()
+    recommend_percentage = (recommended_reviews / total_reviews) * 100 if total_reviews > 0 else 0
+
+    # Calcular la cantidad de items
+    total_items = user_games.items_count.iloc[0]
+
+    return money_spent, recommend_percentage, total_items
+
+
+def countreviews(fechaInicial:str, fechaFinal:str):
+    df_filtrado = df_reviews[(df_reviews['fecha'] > fechaInicial) & (df_reviews['fecha'] < fechaFinal)]
+    cantidad_total = df_filtrado.recommend.count()
+    suma_reviews = df_filtrado.recommend.sum()
+
+    porcentaje = (suma_reviews/cantidad_total) * 100 if cantidad_total > 0 else 0
+
+    return f"La cantidad es: {cantidad_total}, el porcentaje de recomendacion de los usuarios es {porcentaje} "
+
+
+def genre(genre_name:str):
+	# Agrupa por género y suma las horas jugadas
+    genre_hours = df_combined.groupby('genres')['playtime_forever'].sum().reset_index()
+	# Ordena el DataFrame por la columna 'PlayTimeForever' en orden descendente
+    genre_hours = genre_hours.sort_values(by='playtime_forever', ascending=False)
+    genre_hours = genre_hours.reset_index()
+    genre_hours.drop(columns=['index'], inplace=True)
+    posicion = genre_hours[genre_hours['genres'] == genre_name].index[0] + 1
+    return posicion
+
+
+def userforgenre(genero:str):
+    df_topgenero = df_combined[df_combined['genres'] == genero]
+    df_topgenero = df_topgenero.sort_values(by='playtime_forever', ascending=False)
+    df_topgenero = df_topgenero.head(5)
+    dicc = dict(zip(df_topgenero['user_id'], df_topgenero['user_url']))
+    return dicc
+
+
+def developer(desarrollador:str):
+    lista_anios_free = list(df_games[(df_games['developer'] == desarrollador) & (df_games['price'] == 0)].anio.unique())
+    dicc = {}
+    for i in lista_anios_free:
+        total = df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count()
+        suma_free = df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count()
+        porcentaje = (suma_free/total) * 100
+        dicc[i] = f'{round(porcentaje,2)}%'
+    return dicc
+
+
+def sentiment_analysis(anio:int):
+    df_sentiment = df_reviews[df_reviews['anio'] == anio]
+    dicc = {}
+    lista_sentimiento = ['Negative', 'Neutral', 'Positive']
+    for i in range(0, 3):
+
+        cantidad = df_sentiment.sentiment_analysis[df_sentiment['sentiment_analysis'] == i].count()
+        dicc[lista_sentimiento[i]] = cantidad
+    return dicc
+    
+
+
+# Lectura de los csv ya transformados
+df_games = pd.read_csv('src/games.csv')
+df_reviews = pd.read_csv('src/reviews.csv')
+df_items = pd.read_csv('src/items.csv')
+
+# Expansion de los generos para las funciones
+df_genres = df_games.explode('genres')
+
+# Combina df_items y df_genres en función del id del juego
+df_combined = pd.merge(df_items, df_genres, left_on='item_id', right_on='id', how='inner')
+
+
+
+# Modelo de recomendacion
+
+#Lectura del csv con el one hot encoding realizado
+df_encoded = pd.read_csv('src/encoded.csv')
+
+#Guardo las columnas a considerar en el modelo
+columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
+
+
+
+def recomendacion_juego(id_juego):
+# Selecciona solo las columnas numéricas originales relevantes
+    columnas_numericas = columnas_df
+
+# Crea un nuevo DataFrame con las columnas numéricas
+    df_numeric = df_encoded[columnas_numericas]
+
+# Obtén las características del juego de referencia y elimina las columnas innecesarias
+    juego_referencia_caracteristicas = df_numeric[df_encoded['id'] == id_juego]
+
+# Calcula la similitud del coseno utilizando df_numeric en lugar de df_encoded
+    similarity_scores = cosine_similarity(juego_referencia_caracteristicas, df_numeric)
+
+# Convierte los resultados en un DataFrame para facilitar su manipulación
+    similarity_df = pd.DataFrame(similarity_scores, columns=df_encoded['id'])
+
+# Ordena los juegos por similitud descendente
+    recommendations = similarity_df.iloc[0].sort_values(ascending=False)
+
+# Ahora, crea un diccionario de mapeo entre los IDs de juego y los nombres de juego
+    id_to_name = dict(zip(df_encoded['id'], df_encoded['title']))
+
+
+    if id_juego in recommendations:
+        recommendations = recommendations.drop(id_juego)
+
+# Imprime las recomendaciones con los nombres de juego
+    for juego_id, score in recommendations[1:6].items():
+        juego_nombre = id_to_name.get(juego_id, 'Desconocido')
+        print(f"Juego: {juego_nombre} (ID: {juego_id}), Similitud: {score:.4f}")
+
+
+recomendacion_juego(80)
