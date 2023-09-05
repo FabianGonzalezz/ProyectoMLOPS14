@@ -99,7 +99,7 @@ def sentiment_analysis(anio:int):
 # Modelo de recomendacion
 
 #Lectura del csv con el one hot encoding realizado
-df_encoded = pd.read_csv('src/encoded.csv')
+df_encoded = pd.read_parquet('src/encoded.parquet')
 
 #Guardo las columnas a considerar en el modelo
 columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
