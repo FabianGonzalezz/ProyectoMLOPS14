@@ -86,7 +86,7 @@ def developer(desarrollador:str):
         total = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count())
         suma_free = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count())
         porcentaje = (suma_free/total) * 100
-        dicc[i] = round(porcentaje,2)
+        dicc[str(i)] = round(porcentaje,2)
     return dicc
 
 @app.get("/sentiment_analysis/")
