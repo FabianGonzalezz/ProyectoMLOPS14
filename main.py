@@ -148,7 +148,7 @@ def recomendacion_juego(id_juego:str):
     # Iterar a través de las recomendaciones y agregarlas a la lista
     for juego_id, score in recommendations[1:6].items():
         juego_nombre = id_to_name.get(juego_id, 'Desconocido')
-        print({"Juego": juego_nombre, "ID": juego_id, "Similitud": score})
+        result_list.append({"Juego": juego_nombre, "ID": juego_id, "Similitud": score})
 
     # Retornar la lista de resultados en formato JSON
     return result_list
