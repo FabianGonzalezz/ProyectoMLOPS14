@@ -80,13 +80,13 @@ def developer(desarrollador:str):
     dicc = {}
     for i in lista_anios_free:
         total = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count())
-        suma_free = df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count()
+        suma_free = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count())
         porcentaje = (suma_free/total) * 100
         dicc[i] = f'{round(porcentaje,2)}%'
     return dicc
 
 @app.get("/sentiment_analysis/")
-def sentiment_analysis(anio):
+def sentiment_analysis(anio:int):
     df_sentiment = df_reviews[df_reviews['anio'] == anio]
     dicc = {}
     lista_sentimiento = ['Negative', 'Neutral', 'Positive']
@@ -131,11 +131,14 @@ def recomendacion_juego(id_juego):
 
     if id_juego in recommendations:
         recommendations = recommendations.drop(id_juego)
+result_list = []
 
-# Imprime las recomendaciones con los nombres de juego
+# Iterar a través de las recomendaciones y agregarlas a la lista
     for juego_id, score in recommendations[1:6].items():
         juego_nombre = id_to_name.get(juego_id, 'Desconocido')
-        print(f"Juego: {juego_nombre} (ID: {juego_id}), Similitud: {score:.4f}")
+        result_list.append({"Juego": juego_nombre, "ID": juego_id, "Similitud": score})
+
+    return result_list
 
 
 
