@@ -105,6 +105,9 @@ def sentiment_analysis(anio:int):
 #Lectura del csv con el one hot encoding realizado
 df_encoded = pd.read_parquet('src/encoded.parquet')
 
+#Acorto df_encoded para reducir la carga de RAM
+df_encoded = df_encoded.head(15000)
+
 #Guardo las columnas a considerar en el modelo
 columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
 
@@ -113,8 +116,6 @@ def recomendacion_juego(id_juego:str):
 
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
-#Acorto df_encoded para reducir la carga de RAM
-    df_encoded = df_encoded.head(15000)
 
 # Crea un nuevo DataFrame con las columnas numéricas
     df_numeric = df_encoded[columnas_numericas]
