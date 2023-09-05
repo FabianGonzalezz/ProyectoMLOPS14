@@ -109,29 +109,36 @@ df_encoded = pd.read_parquet('src/encoded.parquet')
 columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
 
 @app.get("/recomendacion_juego/")
-def recomendacion_juego(id_juego:str):
-
-# Selecciona solo las columnas numéricas originales relevantes
+def recomendacion_juego(id_juego: str):
+    # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
-# Crea un nuevo DataFrame con las columnas numéricas
+    # Crea un nuevo DataFrame con las columnas numéricas
     df_numeric = df_encoded[columnas_numericas]
 
-# Obtén las características del juego de referencia y elimina las columnas innecesarias
+    # Obtén las características del juego de referencia y elimina las columnas innecesarias
     juego_referencia_caracteristicas = df_numeric[df_encoded['id'] == id_juego]
 
-# Calcula la similitud del coseno utilizando df_numeric en lugar de df_encoded
-    similarity_scores = cosine_similarity(juego_referencia_caracteristicas, df_numeric)
+    # Convierte los resultados en un DataFrame para facilitar su manipulación
+    similarity_df = pd.DataFrame(columns=df_encoded['id'])
 
-# Convierte los resultados en un DataFrame para facilitar su manipulación
-    similarity_df = pd.DataFrame(similarity_scores, columns=df_encoded['id'])
+    # Divide el DataFrame en partes (lotes) más pequeñas
+    batch_size = 100  # Puedes ajustar el tamaño del lote según tus necesidades
 
-# Ordena los juegos por similitud descendente
+    for start in range(0, len(df_numeric), batch_size):
+        end = start + batch_size
+        batch = df_numeric[start:end]
+
+        # Calcula la similitud del coseno para el lote actual y concaténalo al resultado
+        similarity_scores = cosine_similarity(juego_referencia_caracteristicas, batch)
+        batch_similarity_df = pd.DataFrame(similarity_scores, columns=batch['id'])
+        similarity_df = pd.concat([similarity_df, batch_similarity_df], axis=1)
+
+    # Ordena los juegos por similitud descendente
     recommendations = similarity_df.iloc[0].sort_values(ascending=False)
 
-# Ahora, crea un diccionario de mapeo entre los IDs de juego y los nombres de juego
+    # Ahora, crea un diccionario de mapeo entre los IDs de juego y los nombres de juego
     id_to_name = dict(zip(df_encoded['id'], df_encoded['title']))
-
 
     if id_juego in recommendations:
         recommendations = recommendations.drop(id_juego)
