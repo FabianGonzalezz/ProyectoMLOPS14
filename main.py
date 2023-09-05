@@ -62,7 +62,7 @@ def countreviews(fechaInicial:str, fechaFinal:str):
 @app.get("/genre/")
 def genre(genre_name:str):
 	# Agrupa por género y suma las horas jugadas
-    genre_hours = float(df_combined.groupby('genres')['playtime_forever'].sum().reset_index())
+    genre_hours = df_combined.groupby('genres')['playtime_forever'].sum().reset_index()
 	# Ordena el DataFrame por la columna 'PlayTimeForever' en orden descendente
     genre_hours = genre_hours.sort_values(by='playtime_forever', ascending=False)
     genre_hours = genre_hours.reset_index()
