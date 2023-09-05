@@ -6,6 +6,18 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+
+# Lectura de los csv ya transformados
+df_games = pd.read_csv('src/games.csv')
+df_reviews = pd.read_csv('src/reviews.csv')
+df_items = pd.read_csv('src/items.csv')
+
+# Expansion de los generos para las funciones
+df_genres = df_games.explode('genres')
+
+# Combina df_items y df_genres en función del id del juego
+df_combined = pd.merge(df_items, df_genres, left_on='item_id', right_on='id', how='inner')
+
 # Definición de los endpoints
 @app.get("/userdata/")
 def userdata(User_id: str):
@@ -31,6 +43,7 @@ def userdata(User_id: str):
     total_items = user_games.items_count.iloc[0]
 
     return money_spent, recommend_percentage, total_items
+
 
 @app.get("/countreviews/")
 def countreviews(fechaInicial:str, fechaFinal:str):
@@ -83,10 +96,19 @@ def sentiment_analysis(anio:int):
         dicc[lista_sentimiento[i]] = cantidad
     return dicc
     
+# Modelo de recomendacion
 
+#Lectura del csv con el one hot encoding realizado
+df_encoded = pd.read_csv('src/encoded.csv')
+
+#Guardo las columnas a considerar en el modelo
+columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
 
 @app.get("/recomendacion_juego/")
-def recomendacion_juego(id_juego):
+def recomendacion_juego(id_juego:int):
+
+    if type(id_juego) != int:
+        id_juego = int(id_juego)
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
@@ -118,23 +140,5 @@ def recomendacion_juego(id_juego):
         print(f"Juego: {juego_nombre} (ID: {juego_id}), Similitud: {score:.4f}")
 
 
-# Lectura de los csv ya transformados
-df_games = pd.read_csv('src/games.csv')
-df_reviews = pd.read_csv('src/reviews.csv')
-df_items = pd.read_csv('src/items.csv')
-
-# Expansion de los generos para las funciones
-df_genres = df_games.explode('genres')
-
-# Combina df_items y df_genres en función del id del juego
-df_combined = pd.merge(df_items, df_genres, left_on='item_id', right_on='id', how='inner')
 
 
-
-# Modelo de recomendacion
-
-#Lectura del csv con el one hot encoding realizado
-df_encoded = pd.read_csv('src/encoded.csv')
-
-#Guardo las columnas a considerar en el modelo
-columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
