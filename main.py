@@ -113,6 +113,8 @@ def recomendacion_juego(id_juego:str):
 
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
+#Acorto df_encoded para reducir la carga de RAM
+    df_encoded = df_encoded.head(15000)
 
 # Crea un nuevo DataFrame con las columnas numéricas
     df_numeric = df_encoded[columnas_numericas]
