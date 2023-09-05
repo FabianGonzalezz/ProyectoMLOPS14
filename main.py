@@ -106,7 +106,7 @@ def sentiment_analysis(anio:int):
 df_encoded = pd.read_parquet('src/encoded.parquet')
 
 #Acorto df_encoded para reducir la carga de RAM
-df_encoded = df_encoded.head(22000)
+df_encoded = df_encoded.head(15000)
 
 #Guardo las columnas a considerar en el modelo
 columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
