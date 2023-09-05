@@ -39,18 +39,6 @@ Hubo una enorme limpieza de datos ya que existian alrededor de 80000 filas nulas
 
 La API cuenta con 6 endpoints:
 
-def userdata( User_id : str ): Devuelve la cantidad de dinero gastado por el usuario, el porcentaje de recomendación en base a reviews.recommend y cantidad de items.
-
-def countreviews( YYYY-MM-DD y YYYY-MM-DD : str ): Cantidad de usuarios que realizaron reviews entre las fechas dadas y, el porcentaje de recomendación de los mismos en base a reviews.recommend.
-
-def genre( género : str ): Devuelve el puesto en el que se encuentra un género sobre el ranking de los mismos analizado bajo la columna PlayTimeForever.
-
-def userforgenre( género : str ): Top 5 de usuarios con más horas de juego en el género dado, con su URL (del user) y user_id.
-
-def developer( desarrollador : str ): Cantidad de items y porcentaje de contenido Free por año según empresa desarrolladora.
-
-def sentiment_analysis( año : int ): Según el año de lanzamiento, se devuelve una lista con la cantidad de registros de reseñas de usuarios que se encuentren categorizados con un análisis de sentimiento.
-
 * userdata( User_id:str ): Se ingresa un id y devuelve la cantidad de dinero gastado por el usuario, el porcentaje de recomendación en base a reviews.recommend y cantidad de items.
 * countreviews( YYYY-MM-DD y YYYY-MM-DD:str ): Cantidad de usuarios que realizaron reviews entre las fechas dadas y el porcentaje de recomendación positiva que hubo.
 * genre( género:str ): Devuelve el puesto en el que se encuentra un género sobre el ranking de los mismos analizado bajo la columna PlayTimeForever.
