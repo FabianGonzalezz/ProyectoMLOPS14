@@ -107,6 +107,8 @@ columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_d
 @app.get("/recomendacion_juego/")
 def recomendacion_juego(id_juego):
 
+    if type(id_juego) != int:
+        id_juego = int(id_juego)
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
@@ -131,15 +133,16 @@ def recomendacion_juego(id_juego):
 
     if id_juego in recommendations:
         recommendations = recommendations.drop(id_juego)
-result_list = []
 
-# Iterar a través de las recomendaciones y agregarlas a la lista
+
+    result_list = []
+
     for juego_id, score in recommendations[1:6].items():
         juego_nombre = id_to_name.get(juego_id, 'Desconocido')
         result_list.append({"Juego": juego_nombre, "ID": juego_id, "Similitud": score})
+# Imprime las recomendaciones con los nombres de juego
+    #for juego_id, score in recommendations[1:6].items():
+    #   juego_nombre = id_to_name.get(juego_id, 'Desconocido')
+    #  return f"Juego: {juego_nombre} (ID: {juego_id}), Similitud: {score:.4f}"
 
     return result_list
-
-
-
-
