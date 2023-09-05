@@ -36,15 +36,15 @@ def userdata(User_id: str):
     user_games_info = df_games[df_games['id'].isin(user_game_ids)]
 
     # Calcular la cantidad de dinero gastado
-    money_spent = user_games_info['price'].sum()
+    money_spent = float(user_games_info['price'].sum())
 
     # Calcular el porcentaje de recomendación
-    total_reviews = len(user_reviews)
-    recommended_reviews = user_reviews['recommend'].sum()
+    total_reviews = int(len(user_reviews))
+    recommended_reviews = float(user_reviews['recommend'].sum())
     recommend_percentage = (recommended_reviews / total_reviews) * 100 if total_reviews > 0 else 0
 
     # Calcular la cantidad de items
-    total_items = user_games.items_count.iloc[0]
+    total_items = int(user_games.items_count.iloc[0])
 
     return money_spent, recommend_percentage, total_items
 
@@ -62,12 +62,12 @@ def countreviews(fechaInicial:str, fechaFinal:str):
 @app.get("/genre/")
 def genre(genre_name:str):
 	# Agrupa por género y suma las horas jugadas
-    genre_hours = df_combined.groupby('genres')['playtime_forever'].sum().reset_index()
+    genre_hours = float(df_combined.groupby('genres')['playtime_forever'].sum().reset_index())
 	# Ordena el DataFrame por la columna 'PlayTimeForever' en orden descendente
     genre_hours = genre_hours.sort_values(by='playtime_forever', ascending=False)
     genre_hours = genre_hours.reset_index()
     genre_hours.drop(columns=['index'], inplace=True)
-    posicion = genre_hours[genre_hours['genres'] == genre_name].index[0] + 1
+    posicion = int(genre_hours[genre_hours['genres'] == genre_name].index[0] + 1)
     return posicion
 
 @app.get("/userforgenre/")
@@ -86,7 +86,7 @@ def developer(desarrollador:str):
         total = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count())
         suma_free = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count())
         porcentaje = (suma_free/total) * 100
-        dicc[i] = f'{round(porcentaje,2)}%'
+        dicc[i] = {round(porcentaje,2)}
     return dicc
 
 @app.get("/sentiment_analysis/")
