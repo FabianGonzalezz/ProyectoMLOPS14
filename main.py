@@ -64,27 +64,32 @@ def countreviews(fechaInicial:str, fechaFinal:str):
 
 @app.get("/genre/")
 def genre(genre_name:str):
-    # Agrupo por género y suma las horas jugadas
+    # Agrupo por género y sumo las horas jugadas
     genre_hours = df_combined.groupby('genres')['playtime_forever'].sum().reset_index()
     # Ordeno el DataFrame por la columna 'playtime_forever' en orden descendente
     genre_hours = genre_hours.sort_values(by='playtime_forever', ascending=False)
     genre_hours = genre_hours.reset_index()
     genre_hours.drop(columns=['index'], inplace=True)
     posicion = int(genre_hours[genre_hours['genres'] == genre_name].index[0] + 1)
-    return posicion
+    return f"El genero {genre_name} se encuentra en la posicion {posicion} en el ranking de generos."
 
 @app.get("/userforgenre/")
 def userforgenre(genero:str):
+    #Filtro el dataframe por el genero especificado
     df_topgenero = df_combined[df_combined['genres'] == genero]
+    #Ordeno el dataframe por tiempo de juego y tomo los primeros 5
     df_topgenero = df_topgenero.sort_values(by='playtime_forever', ascending=False)
     df_topgenero = df_topgenero.head(5)
+    #Guardo en un diccionario el id del usuario y su url
     dicc = dict(zip(df_topgenero['user_id'], df_topgenero['user_url']))
     return dicc
 
 @app.get("/developer/")
 def developer(desarrollador:str):
+    #Guardo en una lista los juegos gratis segun el desarrollador.
     lista_anios_free = list(df_games[(df_games['developer'] == desarrollador) & (df_games['price'] == 0)].anio.unique())
     dicc = {}
+    #Relleno el diccionario con key anio y valor el porcentaje de juegos gratis en ese anio.
     for i in lista_anios_free:
         total = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count())
         suma_free = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count())
@@ -94,11 +99,12 @@ def developer(desarrollador:str):
 
 @app.get("/sentiment_analysis/")
 def sentiment_analysis(anio:int):
+    #Filtro las reviews por anio
     df_sentiment = df_reviews[df_reviews['anio'] == anio]
     dicc = {}
     lista_sentimiento = ['Negative', 'Neutral', 'Positive']
+    #Relleno el diccionario con el total de valores segun el sentimiento.
     for i in range(0, 3):
-
         cantidad = int(df_sentiment.sentiment_analysis[df_sentiment['sentiment_analysis'] == i].count())
         dicc[lista_sentimiento[i]] = cantidad
     return dicc
@@ -120,39 +126,39 @@ def recomendacion_juego(id_juego:str):
     if type(id_juego) != str:
         id_juego = str(id_juego)
 
-# Selecciona solo las columnas numéricas originales relevantes
+    #Selecciono solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
-# Crea un nuevo DataFrame con las columnas numéricas
+    #Creo un nuevo DataFrame con las columnas numéricas
     df_numeric = df_encoded[columnas_numericas]
 
-# Obtén las características del juego de referencia y elimina las columnas innecesarias
+    #Obtengo las características del juego de referencia y elimino las columnas innecesarias
     juego_referencia_caracteristicas = df_numeric[df_encoded['id'] == id_juego]
 
-# Calcula la similitud del coseno utilizando df_numeric en lugar de df_encoded
+    #Calculo la similitud del coseno utilizando df_numeric en lugar de df_encoded
     similarity_scores = cosine_similarity(juego_referencia_caracteristicas, df_numeric)
 
-# Convierte los resultados en un DataFrame para facilitar su manipulación
+    #Convierto los resultados en un DataFrame para facilitar su manipulación
     similarity_df = pd.DataFrame(similarity_scores, columns=df_encoded['id'])
 
-# Ordena los juegos por similitud descendente
+    #Ordeno los juegos por similitud descendente
     recommendations = similarity_df.iloc[0].sort_values(ascending=False)
 
-# Ahora, crea un diccionario de mapeo entre los IDs de juego y los nombres de juego
+    #Creo un diccionario de mapeo entre los IDs de juego y los nombres de juego
     id_to_name = dict(zip(df_encoded['id'], df_encoded['title']))
 
 
     if id_juego in recommendations:
         recommendations = recommendations.drop(id_juego)
 
-    # Crear una lista de resultados
+    # Creo una lista de resultados
     result_list = []
 
-    # Iterar a través de las recomendaciones y agregarlas a la lista
+    # Itero a través de las recomendaciones y las agrego a la lista
     for juego_id, score in recommendations[1:6].items():
         juego_nombre = id_to_name.get(juego_id, 'Desconocido')
         result_list.append({"Juego": juego_nombre, "ID": juego_id, "Similitud": score})
 
-    # Retornar la lista de resultados en formato JSON
+    # Retorno la lista de resultados en formato JSON
     return result_list
 
