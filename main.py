@@ -131,7 +131,7 @@ def recomendacion_juego(id_juego: str):
 
         # Calcula la similitud del coseno para el lote actual y concaténalo al resultado
         similarity_scores = cosine_similarity(juego_referencia_caracteristicas, batch)
-        batch_similarity_df = pd.DataFrame(similarity_scores, columns=batch['id'])
+        batch_similarity_df = pd.DataFrame(similarity_scores, columns=df_numeric.columns)
         similarity_df = pd.concat([similarity_df, batch_similarity_df], axis=1)
 
     # Ordena los juegos por similitud descendente
