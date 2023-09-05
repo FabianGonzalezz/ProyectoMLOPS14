@@ -105,7 +105,11 @@ df_encoded = pd.read_parquet('src/encoded.parquet')
 columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_date', 'reviews_url', 'specs', 'id', 'developer', 'anio', 'price', 'early_access']).columns)
 
 @app.get("/recomendacion_juego/")
-def recomendacion_juego(id_juego):
+def recomendacion_juego(id_juego:str):
+
+    if type(id_juego) != str:
+        id_juego = str(id_juego)
+
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
