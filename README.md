@@ -36,35 +36,31 @@ Podemos ver en el siguiente grafico de torta la distribucion del analisis de sen
 
 Para realizar la limpieza desde 0 se deben descomprimir los archivos de archivos_sin_limpiar.zip. Tuve que comprimirlos porque los json originales eran muy pesados para GitHub.
 Hubo una enorme limpieza de datos ya que existian alrededor de 80000 filas nulas.
-Para el Modelo de recomendacion se recortaron a 15000 la cantidad de datos en el dataframe principalmente porque render no permite utilizar mas de 512MB. Siendo que mi dataframe completo es de mas de 20000 filas pueden haber errores o valores faltantes a la hora de buscar un Id.
 
 La API cuenta con 6 endpoints:
-* Genero( Año: str ): Se ingresa un año y devuelve un diccionario de clave Año con los 5 géneros más ofrecidos en el orden correspondiente como valor.
-* Juegos( Año: str ): Se ingresa un año y devuelve un diccionario de clave Año con una lista de los juegos lanzados en el año como valor.
-* Specs( Año: str ): Se ingresa un año y devuelve un diccionario de clave Año con los 5 specs que más se repiten en el mismo en el orden correspondiente como valor.
-* Earlyacces( Año: str ): Diccionario con la cantidad de juegos lanzados en un año con early access. Siendo Año la clave y la cantidad el valor.
-* Sentiment( Año: str ): Según el año de lanzamiento, se devuelve un diccionario, de clave sentimiento y de valor la cantidad de registros asociados a ese Sentimiento (Positive: 200, Negative: 100).
-* Metascore( Año: str ): Top 5 juegos según año con mayor metascore Siendo un diccionario de clave el nombre del juego y de valor el metascore.
 
-Los parametros requeridos para hacer funcionar la prediccion del modelo mediante FastAPI son:
+def userdata( User_id : str ): Devuelve la cantidad de dinero gastado por el usuario, el porcentaje de recomendación en base a reviews.recommend y cantidad de items.
 
-1. Publisher. En formato string el nombre de la empresa que publica el juego (Ubisoft, Epic Games, Valve)
+def countreviews( YYYY-MM-DD y YYYY-MM-DD : str ): Cantidad de usuarios que realizaron reviews entre las fechas dadas y, el porcentaje de recomendación de los mismos en base a reviews.recommend.
 
-2. Tag. En formato string el tipo de juego. (Action, Adventure, Indie, Simulator)
+def genre( género : str ): Devuelve el puesto en el que se encuentra un género sobre el ranking de los mismos analizado bajo la columna PlayTimeForever.
 
-3. Sentiment. En formato string el sentimiento general del juego siguiendo las siguientes consideraciones:
-* Overwhelmingly Positive
-* Very Positive
-* Positive
-* Mostly Positive
-* Mixed
-* Mostly Negative
-* Negative
-* Very Negative
-* Overwhelmingly Negative.
-* No data
+def userforgenre( género : str ): Top 5 de usuarios con más horas de juego en el género dado, con su URL (del user) y user_id.
 
-4. Anio. En formato string el anio de salida el juego (2016, 2017, 2018)
+def developer( desarrollador : str ): Cantidad de items y porcentaje de contenido Free por año según empresa desarrolladora.
+
+def sentiment_analysis( año : int ): Según el año de lanzamiento, se devuelve una lista con la cantidad de registros de reseñas de usuarios que se encuentren categorizados con un análisis de sentimiento.
+
+* userdata( User_id:str ): Se ingresa un id y devuelve la cantidad de dinero gastado por el usuario, el porcentaje de recomendación en base a reviews.recommend y cantidad de items.
+* countreviews( YYYY-MM-DD y YYYY-MM-DD:str ): Cantidad de usuarios que realizaron reviews entre las fechas dadas y el porcentaje de recomendación positiva que hubo.
+* genre( género:str ): Devuelve el puesto en el que se encuentra un género sobre el ranking de los mismos analizado bajo la columna PlayTimeForever.
+* userforgenre( género:str ): Devuelve el top 5 de usuarios con más horas de juego en el género dado, con su URL (del user) y user_id.
+* developer( desarrollador:str ): Devuelve año y porcentaje de contenido Free por año según empresa desarrolladora.
+* sentiment_analysis( año:int ):  Según el año de lanzamiento, se devuelve una lista con la cantidad de registros de reseñas de usuarios que se encuentren categorizados con un análisis de sentimiento.
+
+El parametro requerido para hacer funcionar el modelo mediante FastAPI es el ID del juego en base al dataframe de Steam. Siendo por ejemplo 730 = Counter Strike Global Offensive.
+Para el Modelo de recomendacion se recortaron a 15000 la cantidad de datos en el dataframe principalmente porque render no permite utilizar mas de 512MB. Siendo que mi dataframe completo es de mas de 20000 filas pueden haber errores o valores faltantes a la hora de buscar un Id.
+En caso de no utilizarlo en render y usarlo de forma local, simplemente eliminar la siguiente linea: df_encoded = df_encoded.head(15000). Linea 118 antes del modelo de recomendacion.
 
 ## Instalación y Uso
 
