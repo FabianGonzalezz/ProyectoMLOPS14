@@ -111,40 +111,18 @@ columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_d
 @app.get("/recomendacion_juego/")
 def recomendacion_juego(id_juego):
 
-# Selecciona solo las columnas numéricas originales relevantes
-    columnas_numericas = columnas_df
+    if type(id_juego) != int:
+        id_juego = int(id_juego)
 
-# Crea un nuevo DataFrame con las columnas numéricas
-    df_numeric = df_encoded[columnas_numericas]
+    # ... Tu código para calcular las recomendaciones ...
 
-# Obtén las características del juego de referencia y elimina las columnas innecesarias
-    juego_referencia_caracteristicas = df_numeric[df_encoded['id'] == id_juego]
-
-# Calcula la similitud del coseno utilizando df_numeric en lugar de df_encoded
-    similarity_scores = cosine_similarity(juego_referencia_caracteristicas, df_numeric)
-
-# Convierte los resultados en un DataFrame para facilitar su manipulación
-    similarity_df = pd.DataFrame(similarity_scores, columns=df_encoded['id'])
-
-# Ordena los juegos por similitud descendente
-    recommendations = similarity_df.iloc[0].sort_values(ascending=False)
-
-# Ahora, crea un diccionario de mapeo entre los IDs de juego y los nombres de juego
-    id_to_name = dict(zip(df_encoded['id'], df_encoded['title']))
-
-
-    if id_juego in recommendations:
-        recommendations = recommendations.drop(id_juego)
-
-
+    # Crear una lista de resultados
     result_list = []
 
+    # Iterar a través de las recomendaciones y agregarlas a la lista
     for juego_id, score in recommendations[1:6].items():
         juego_nombre = id_to_name.get(juego_id, 'Desconocido')
         result_list.append({"Juego": juego_nombre, "ID": juego_id, "Similitud": score})
-# Imprime las recomendaciones con los nombres de juego
-    #for juego_id, score in recommendations[1:6].items():
-    #   juego_nombre = id_to_name.get(juego_id, 'Desconocido')
-    #  return f"Juego: {juego_nombre} (ID: {juego_id}), Similitud: {score:.4f}"
 
+    # Retornar la lista de resultados en formato JSON
     return result_list
