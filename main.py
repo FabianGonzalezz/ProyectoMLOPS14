@@ -79,7 +79,7 @@ def developer(desarrollador:str):
     lista_anios_free = list(df_games[(df_games['developer'] == desarrollador) & (df_games['price'] == 0)].anio.unique())
     dicc = {}
     for i in lista_anios_free:
-        total = df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count()
+        total = int(df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i)].anio.count())
         suma_free = df_games[(df_games['developer'] == desarrollador) & (df_games['anio'] == i) & (df_games['price'] == 0)].anio.count()
         porcentaje = (suma_free/total) * 100
         dicc[i] = f'{round(porcentaje,2)}%'
@@ -92,7 +92,7 @@ def sentiment_analysis(anio):
     lista_sentimiento = ['Negative', 'Neutral', 'Positive']
     for i in range(0, 3):
 
-        cantidad = df_sentiment.sentiment_analysis[df_sentiment['sentiment_analysis'] == i].count()
+        cantidad = int(df_sentiment.sentiment_analysis[df_sentiment['sentiment_analysis'] == i].count())
         dicc[lista_sentimiento[i]] = cantidad
     return dicc
     
@@ -107,8 +107,6 @@ columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_d
 @app.get("/recomendacion_juego/")
 def recomendacion_juego(id_juego):
 
-    if type(id_juego) != int:
-        id_juego = int(id_juego)
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
