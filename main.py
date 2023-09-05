@@ -114,7 +114,30 @@ def recomendacion_juego(id_juego):
     if type(id_juego) != int:
         id_juego = int(id_juego)
 
-    # ... Tu código para calcular las recomendaciones ...
+# Selecciona solo las columnas numéricas originales relevantes
+    columnas_numericas = columnas_df
+
+# Crea un nuevo DataFrame con las columnas numéricas
+    df_numeric = df_encoded[columnas_numericas]
+
+# Obtén las características del juego de referencia y elimina las columnas innecesarias
+    juego_referencia_caracteristicas = df_numeric[df_encoded['id'] == id_juego]
+
+# Calcula la similitud del coseno utilizando df_numeric en lugar de df_encoded
+    similarity_scores = cosine_similarity(juego_referencia_caracteristicas, df_numeric)
+
+# Convierte los resultados en un DataFrame para facilitar su manipulación
+    similarity_df = pd.DataFrame(similarity_scores, columns=df_encoded['id'])
+
+# Ordena los juegos por similitud descendente
+    recommendations = similarity_df.iloc[0].sort_values(ascending=False)
+
+# Ahora, crea un diccionario de mapeo entre los IDs de juego y los nombres de juego
+    id_to_name = dict(zip(df_encoded['id'], df_encoded['title']))
+
+
+    if id_juego in recommendations:
+        recommendations = recommendations.drop(id_juego)
 
     # Crear una lista de resultados
     result_list = []
