@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from textblob import TextBlob
 from sklearn.metrics.pairwise import cosine_similarity
+import ast
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -11,6 +12,9 @@ app = FastAPI()
 df_games = pd.read_csv('src/games.csv')
 df_reviews = pd.read_csv('src/reviews.csv')
 df_items = pd.read_csv('src/items.csv')
+
+# Convierte la columna 'genres' en listas utilizando ast.literal_eval()
+df_games['genres'] = df_games['genres'].apply(ast.literal_eval)
 
 # Expansion de los generos para las funciones
 df_genres = df_games.explode('genres')
