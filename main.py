@@ -114,6 +114,9 @@ columnas_df = list(df_encoded.drop(columns=['genres', 'title', 'url', 'release_d
 @app.get("/recomendacion_juego/")
 def recomendacion_juego(id_juego:str):
 
+    if type(id_juego) != str:
+        id_juego = str(id_juego)
+
 # Selecciona solo las columnas numéricas originales relevantes
     columnas_numericas = columnas_df
 
