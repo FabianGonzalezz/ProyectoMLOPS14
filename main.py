@@ -13,46 +13,49 @@ df_games = pd.read_csv('src/games.csv')
 df_reviews = pd.read_csv('src/reviews.csv')
 df_items = pd.read_csv('src/items.csv')
 
-# Convierte la columna 'genres' en listas utilizando ast.literal_eval()
+# Convierto la columna 'genres' en listas utilizando ast.literal_eval()
 df_games['genres'] = df_games['genres'].apply(ast.literal_eval)
 
 # Expansion de los generos para las funciones
 df_genres = df_games.explode('genres')
 
-# Combina df_items y df_genres en función del id del juego
+# Combino df_items y df_genres en función del id del juego
 df_combined = pd.merge(df_items, df_genres, left_on='item_id', right_on='id', how='inner')
 
 # Definición de los endpoints
 @app.get("/userdata/")
 def userdata(User_id: str):
-    # Filtrar datos relevantes para el usuario en los DataFrames
+    # Filtro datos relevantes para el usuario en los DataFrames
     user_games = df_items[df_items['user_id'] == User_id]
     user_reviews = df_reviews[df_reviews['user_id'] == User_id]
 
-    # Obtener los IDs de los juegos que el usuario ha tenido
+    # Obtengo los IDs de los juegos que el usuario ha tenido
     user_game_ids = user_games['item_id']
 
-    # Filtrar los juegos correspondientes en df_games
+    # Filtro los juegos correspondientes en df_games
     user_games_info = df_games[df_games['id'].isin(user_game_ids)]
 
-    # Calcular la cantidad de dinero gastado
+    # Calculo la cantidad de dinero gastado
     money_spent = float(user_games_info['price'].sum())
 
-    # Calcular el porcentaje de recomendación
+    # Calculo el porcentaje de recomendación
     total_reviews = int(len(user_reviews))
     recommended_reviews = float(user_reviews['recommend'].sum())
     recommend_percentage = (recommended_reviews / total_reviews) * 100 if total_reviews > 0 else 0
 
-    # Calcular la cantidad de items
+    # Calculo la cantidad de items
     total_items = int(user_games.items_count.iloc[0])
 
-    return money_spent, recommend_percentage, total_items
+    return {"Dinero Gastado":money_spent, "Porcentaje de recomendacion":recommend_percentage, "Cantidad de items": total_items}
 
 
 @app.get("/countreviews/")
 def countreviews(fechaInicial:str, fechaFinal:str):
+    #Filtro las reviews en base a las fechas proporcionadas
     df_filtrado = df_reviews[(df_reviews['fecha'] > fechaInicial) & (df_reviews['fecha'] < fechaFinal)]
+    #Calculo la cantidad total de reviews
     cantidad_total = df_filtrado.recommend.count()
+    #Sumo las reviews para luego calcular el porcentaje
     suma_reviews = df_filtrado.recommend.sum()
 
     porcentaje = (suma_reviews/cantidad_total) * 100 if cantidad_total > 0 else 0
@@ -61,9 +64,9 @@ def countreviews(fechaInicial:str, fechaFinal:str):
 
 @app.get("/genre/")
 def genre(genre_name:str):
-	# Agrupa por género y suma las horas jugadas
+    # Agrupo por género y suma las horas jugadas
     genre_hours = df_combined.groupby('genres')['playtime_forever'].sum().reset_index()
-	# Ordena el DataFrame por la columna 'PlayTimeForever' en orden descendente
+    # Ordeno el DataFrame por la columna 'playtime_forever' en orden descendente
     genre_hours = genre_hours.sort_values(by='playtime_forever', ascending=False)
     genre_hours = genre_hours.reset_index()
     genre_hours.drop(columns=['index'], inplace=True)
