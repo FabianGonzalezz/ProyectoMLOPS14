@@ -2,7 +2,7 @@
 
 Machine Learning Operations (MLOps)
 
-# Proyecto de Análisis y Predicción de Precios de Juegos de Steam
+# Proyecto de Análisis y Recomendacion de Juegos de Steam
 
 Este proyecto tiene como objetivo realizar un análisis completo de un dataset de juegos de la plataforma Steam, incluyendo un proceso de ETL, la creación de una API utilizando FastAPI y la implementación de un modelo de recomendacion basado una relación ítem-ítem, por lo tanto se elige un juego y en base a que tan similar es ese ítem al resto, se recomiendan similares.
 
